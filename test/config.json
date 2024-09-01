@@ -1,0 +1,66 @@
+{
+  "env": "local",
+  "trace_logs": false,
+  "ocpp": {
+    "soap": {
+      "scheme": "http",
+      "host": "127.0.0.1",
+      "port": 8000,
+      "logs": "none"
+    },
+    "json": {
+      "scheme": "ws",
+      "host": "127.0.0.1",
+      "port": 8010,
+      "logs": "none"
+    }
+  },
+  "server": {
+    "scheme": "http",
+    "host": "127.0.0.1",
+    "port": 8080,
+    "logs": "none"
+  },
+  "superadmin": {
+    "username": "slf.admin@ev.com",
+    "password": "Slf.admin00"
+  },
+  "admin": {
+    "username": "admin@sap.com",
+    "password": "Slf.admin00"
+  },
+  "mailServer": {
+    "host": "127.0.0.1",
+    "port": 1080
+  },
+  "storage": {
+    "implementation": "mongodb",
+    "uri": "",
+    "debug": false,
+    "poolSize": 10
+  },
+  "billing": {
+    "isTransactionBillingActivated": true,
+    "immediateBillingAllowed": true,
+    "periodicBillingAllowed": true,
+    "taxID": ""
+  },
+  "stripe": {
+    "url": "",
+    "publicKey": "",
+    "secretKey": ""
+  },
+  "smartCharging": {
+    "optimizerUrl": "",
+    "user": "",
+    "password": ""
+  },
+  "assetConnectors": {
+    "ioThink": {
+      "user": "",
+      "password": "",
+      "url": "",
+      "meterID": ""
+    }
+  }
+}
