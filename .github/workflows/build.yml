@@ -2,10 +2,10 @@ name: Build CI
 on:
   push:
     branches:
-      - wattway
+      - master
   pull_request:
     branches:
-      - wattway
+      - master
 
 jobs:
   build:

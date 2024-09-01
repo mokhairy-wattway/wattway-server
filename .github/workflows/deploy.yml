@@ -4,7 +4,7 @@ name: WattWay CD
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ wattway ]
+    branches: [ master ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -12,6 +12,10 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -23,9 +27,20 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
-          cd ~/ev-server
-          git pull mohamed wattway
-          git status
+          source ~/.bashrc
+          echo $NVM_DIR
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_ed25519_github_wattway
+          ssh-add -l
+          cd ~/wattway-server
+          git pull origin master
+          nvm use v16
           npm ci
           npm run build:prod
-          pm2 restart ev-server
+          pm2 restart wattway-server
+
+
+
+
+
+
