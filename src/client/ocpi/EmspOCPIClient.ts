@@ -405,7 +405,7 @@ export default class EmspOCPIClient extends OCPIClient {
     const countryCode = this.getLocalCountryCode(ServerAction.OCPI_EMSP_UPDATE_TOKENS);
     const partyID = this.getLocalPartyID(ServerAction.OCPI_EMSP_UPDATE_TOKENS);
     // Build url to IOP
-    const fullUrl = tokensUrl + `/${countryCode}/${partyID}/${token.uid}`;
+    const fullUrl = tokensUrl + `${countryCode}/${partyID}/${token.uid}`;
     // Call IOP
     await this.axiosInstance.put(
       fullUrl,
