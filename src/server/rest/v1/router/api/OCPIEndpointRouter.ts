@@ -21,6 +21,7 @@ export default class OCPIEndpointRouter {
     this.buildRouteOcpiEndpointPullLocations();
     this.buildRouteOcpiEndpointPullSessions();
     this.buildRouteOcpiEndpointPullTokens();
+    this.buildRouteOcpiEndpointPullTariffs();
     this.buildRouteOcpiEndpointSendEVSEStatuses();
     this.buildRouteOcpiEndpointSendTokens();
     this.buildRouteOcpiEndpointGenerateTokens();
@@ -93,6 +94,13 @@ export default class OCPIEndpointRouter {
     this.router.put(`/${RESTServerRoute.REST_OCPI_ENDPOINT_PULL_TOKENS}`, (req: Request, res: Response, next: NextFunction) => {
       req.body.id = req.params.id;
       void RouterUtils.handleRestServerAction(OCPIEndpointService.handlePullTokensEndpoint.bind(this), ServerAction.OCPI_CPO_GET_TOKENS, req, res, next);
+    });
+  }
+
+  private buildRouteOcpiEndpointPullTariffs(): void {
+    this.router.put(`/${RESTServerRoute.REST_OCPI_ENDPOINT_PULL_TARIFFS}`, (req: Request, res: Response, next: NextFunction) => {
+      req.body.id = req.params.id;
+      void RouterUtils.handleRestServerAction(OCPIEndpointService.handlePullTariffsEndpoint.bind(this), ServerAction.OCPI_EMSP_GET_TARIFFS, req, res, next);
     });
   }
 

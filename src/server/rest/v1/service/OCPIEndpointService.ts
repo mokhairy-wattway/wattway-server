@@ -294,6 +294,45 @@ export default class OCPIEndpointService {
     next();
   }
 
+  public static async handlePullTariffsEndpoint(action: ServerAction, req: Request, res: Response, next: NextFunction): Promise<void> {
+    // Check if component is active
+    UtilsService.assertComponentIsActiveFromToken(req.user, TenantComponents.OCPI,
+      Action.TRIGGER_JOB, Entity.OCPI_ENDPOINT, MODULE_NAME, 'handlePullTariffsEndpoint');
+    // Filter
+    const filteredRequest = OCPIEndpointValidatorRest.getInstance().validateOCPIEndpointCommandReq(req.body);
+    // Check and get ocpi endpoint
+    const ocpiEndpoint = await UtilsService.checkAndGetOCPIEndpointAuthorization(req.tenant, req.user, filteredRequest.id, Action.TRIGGER_JOB, action);
+    // Get the lock
+    const pullTariffsLock = await LockingHelper.createOCPIPullTariffsLock(req.tenant.id, ocpiEndpoint);
+    if (!pullTariffsLock) {
+      throw new AppError({
+        action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+        errorCode: HTTPError.CANNOT_ACQUIRE_LOCK,
+        message: 'Error in pulling the OCPI Tariffs: cannot acquire the lock',
+        module: MODULE_NAME, method: 'handlePullTariffsEndpoint',
+      });
+    }
+    try {
+      // Create and Save async task
+      await AsyncTaskBuilder.createAndSaveAsyncTasks({
+        name: AsyncTasks.OCPI_PULL_TARIFFS,
+        action,
+        type: AsyncTaskType.TASK,
+        tenantID: req.tenant.id,
+        parameters: {
+          endpointID: filteredRequest.id,
+        },
+        module: MODULE_NAME,
+        method: 'handlePullTariffsEndpoint',
+      });
+    } finally {
+      // Release the lock
+      await LockingManager.release(pullTariffsLock);
+    }
+    res.json(Constants.REST_RESPONSE_SUCCESS);
+    next();
+  }
+
   public static async handlePullCdrsEndpoint(action: ServerAction, req: Request, res: Response, next: NextFunction): Promise<void> {
     // Check if component is active
     UtilsService.assertComponentIsActiveFromToken(req.user, TenantComponents.OCPI,

@@ -203,6 +203,7 @@ export enum ServerAction {
   OCPI_EMSP_RESERVE_NOW = 'OcpiEmspReserveNow',
   OCPI_EMSP_UNLOCK_CONNECTOR = 'OcpiEmspUnlockConnector',
   OCPI_EMSP_GET_TARIFF = 'OcpiEmspGetTariff',
+  OCPI_EMSP_GET_TARIFFS = 'OcpiEmspGetTariffs',
   OCPI_EMSP_PUT_TARIFF = 'OcpiEmspPutTariff',
 
   OICP_CPO_REQUEST = 'OicpCpoRequest',
@@ -642,6 +643,7 @@ export enum RESTServerRoute {
   REST_OCPI_ENDPOINT_PULL_LOCATIONS = 'ocpi/endpoints/:id/locations/pull',
   REST_OCPI_ENDPOINT_PULL_SESSIONS = 'ocpi/endpoints/:id/sessions/pull',
   REST_OCPI_ENDPOINT_PULL_TOKENS = 'ocpi/endpoints/:id/tokens/pull',
+  REST_OCPI_ENDPOINT_PULL_TARIFFS = 'ocpi/endpoints/:id/tariffs/pull',
   REST_OCPI_ENDPOINT_SEND_EVSE_STATUSES = 'ocpi/endpoints/:id/evses/statuses/send',
   REST_OCPI_ENDPOINT_SEND_TOKENS = 'ocpi/endpoints/:id/tokens/send',
   REST_OCPI_ENDPOINT_GENERATE_LOCAL_TOKEN = 'ocpi/endpoints/tokens/generate',
