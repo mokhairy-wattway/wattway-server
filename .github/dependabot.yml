@@ -1,14 +1,14 @@
-version: 2
-updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'daily'
-    labels:
-      - 'dependencies'
-    reviewers:
-      - 'cabch'
-      - 'mahdibenromdhane'
-      - 'Ramzay'
-      - 'ClaudeROSSI'
-    versioning-strategy: increase
+# version: 2
+# updates:
+#   - package-ecosystem: 'npm'
+#     directory: '/'
+#     schedule:
+#       interval: 'daily'
+#     labels:
+#       - 'dependencies'
+#     reviewers:
+#       - 'cabch'
+#       - 'mahdibenromdhane'
+#       - 'Ramzay'
+#       - 'ClaudeROSSI'
+#     versioning-strategy: increase
