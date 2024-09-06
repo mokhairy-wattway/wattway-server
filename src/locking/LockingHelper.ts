@@ -160,6 +160,10 @@ export default class LockingHelper {
     return LockingHelper.acquireOCPIEndpointActionLock(tenantID, ocpiEndpoint, 'pull-sessions');
   }
 
+  public static async createOCPIPullTariffsLock(tenantID: string, ocpiEndpoint: OCPIEndpoint): Promise<Lock | null> {
+    return LockingHelper.acquireOCPIEndpointActionLock(tenantID, ocpiEndpoint, 'pull-tariffs');
+  }
+
   public static async createOCPIPatchLocationsLock(tenantID: string, ocpiEndpoint: OCPIEndpoint): Promise<Lock | null> {
     return LockingHelper.acquireOCPIEndpointActionLock(tenantID, ocpiEndpoint, 'patch-locations');
   }

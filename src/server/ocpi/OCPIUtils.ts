@@ -27,6 +27,7 @@ import RoamingUtils from '../../utils/RoamingUtils';
 import { ServerAction } from '../../types/Server';
 import SettingStorage from '../../storage/mongodb/SettingStorage';
 import { SimplePricingSetting } from '../../types/Setting';
+import PricingDefinition from '../../types/Pricing';
 import Site from '../../types/Site';
 import SiteArea from '../../types/SiteArea';
 import SiteAreaStorage from '../../storage/mongodb/SiteAreaStorage';
@@ -470,6 +471,13 @@ export default class OCPIUtils {
     tariff.last_updated = simplePricingSetting.last_updated;
     return tariff;
   }
+  // public static convertOcpiTariffToPricingDefinition(tariff: OCPITariff): PricingDefinition {
+
+  //   const pricingDefinition = {} as PricingDefinition;
+  //   pricingDefinition.name =
+
+
+  // }
 
   public static async updateCreateSiteWithEmspLocation(tenant: Tenant, location: OCPILocation, company: Company, site: Site, siteName?: string): Promise<Site> {
     // Create Site

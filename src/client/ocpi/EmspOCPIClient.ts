@@ -31,6 +31,7 @@ import Tenant from '../../types/Tenant';
 import TransactionStorage from '../../storage/mongodb/TransactionStorage';
 import Utils from '../../utils/Utils';
 import _ from 'lodash';
+import { OCPITariff } from '../../types/ocpi/OCPITariff';
 
 const MODULE_NAME = 'EmspOCPIClient';
 
@@ -537,52 +538,76 @@ export default class EmspOCPIClient extends OCPIClient {
     });
     return response.data.data as OCPICommandResponse;
   }
-  // public async pullTariffs(partial = false): Promise<OCPIResult> {
-  //   // Result
-  //   const result: OCPIResult = {
-  //     success: 0,
-  //     failure: 0,
-  //     total: 0,
-  //     logs: []
-  //   };
-  //   // Perfs trace
-  //   const startTime = new Date().getTime();
-  //   // Get tariffs endpoint url
-  //   let tariffsUrl = this.getEndpointUrl('tariffs', ServerAction.OCPI_EMSP_GET_TARIFF);
-  //   let momentFrom: Moment;
-  //   if (partial) {
-  //     // Last 2 days by default
-  //     momentFrom = moment().utc().subtract(2, 'days').startOf('day');
-  //   } else {
-  //     // Last 2 weeks by default
-  //     momentFrom = moment().utc().subtract(2, 'weeks').startOf('day');
-  //   }
-  //   tariffsUrl = `${tariffsUrl}?date_from=${momentFrom.format()}&limit=10`;
-  //   let nextResult = true;
-  //   do {
-  //     // Call IOP
-  //     const response = await this.axiosInstance.get(
-  //       tariffsUrl,
-  //       {
-  //         headers: {
-  //           Authorization: `Token ${this.ocpiEndpoint.token}`
-  //         },
-  //       });
-  //     const tariffs = response.data.data as OCPIToken[];
-  //     if (!Utils.isEmptyArray(tariffs)) {
-  //       await Promise.map(tariffs, async (tariff: OCPIToken) => {
-  //         try {
-  //           await OCPIUtilsService.processEmspTariff(this.tenant, tariff, ServerAction.OCPI_EMSP_GET_TARIFFS);
-  //           result.success++;
-  //         }
-  //         catch (error) {
-  //           result.failure++;
-  //           result.logs.push(
-  //             `Failed to update Tariff ID '${tariff.id}': ${error.message as string}`
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+  public async pullTariffs(partial = false): Promise<OCPIResult> {
+    // Result
+    const result: OCPIResult = {
+      success: 0,
+      failure: 0,
+      total: 0,
+      logs: []
+    };
+    // Perfs trace
+    const startTime = new Date().getTime();
+    // Get tariffs endpoint url
+    let tariffsUrl = this.getEndpointUrl('tariffs', ServerAction.OCPI_EMSP_GET_TARIFFS);
+    let momentFrom: Moment;
+    if (partial) {
+      // Last 2 days by default
+      momentFrom = moment().utc().subtract(2, 'days').startOf('day');
+    } else {
+      // Last 2 weeks by default
+      momentFrom = moment().utc().subtract(2, 'weeks').startOf('day');
+    }
+    tariffsUrl = `${tariffsUrl}?date_from=${momentFrom.format()}&limit=10`;
+    let nextResult = true;
+    do {
+      // Call IOP
+      const response = await this.axiosInstance.get(
+        tariffsUrl,
+        {
+          headers: {
+            Authorization: `Token ${this.ocpiEndpoint.token}`
+          },
+        });
+      const tariffs = response.data.data as OCPITariff[];
+      if (!Utils.isEmptyArray(tariffs)) {
+        await Promise.map(tariffs, async (tariff: OCPITariff) => {
+          try {
+            // await OCPIUtilsService.processEmspTariff(this.tenant, tariff, ServerAction.OCPI_EMSP_GET_TARIFFS);
+            // log the tariff
+            await Logging.logDebug({
+              tenantID: this.tenant.id,
+              action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+              message: `Tariff ID '${tariff.id}'`,
+              module: MODULE_NAME, method: 'pullTariffs',
+              detailedMessages: { tariff }
+            });
+            result.success++;
+          } catch (error) {
+            result.failure++;
+            result.logs.push(
+              `Failed to update Tariff ID '${tariff.id}': ${error.message as string}`
+            );
+          }
+        },
+        { concurrency: Constants.OCPI_MAX_PARALLEL_REQUESTS });
+      }
+      const nextUrl = OCPIUtils.getNextUrl(response.headers.link);
+      if (nextUrl && nextUrl.length > 0 && nextUrl !== tariffsUrl) {
+        tariffsUrl = nextUrl;
+      } else {
+        nextResult = false;
+      }
+     } while (nextResult);
+      result.total = result.failure + result.success;
+      const executionDurationSecs = (new Date().getTime() - startTime) / 1000;
+      await Logging.logOcpiResult(this.tenant.id, ServerAction.OCPI_EMSP_GET_TARIFFS,
+        MODULE_NAME, 'pullTariffs', result,
+        `{{inSuccess}} Tariff(s) were successfully pulled in ${executionDurationSecs}s`,
+        `{{inError}} Tariff(s) failed to be pulled in ${executionDurationSecs}s`,
+        `{{inSuccess}} Tariff(s) were successfully pulled and {{inError}} failed to be pulled in ${executionDurationSecs}s`,
+        'No Tariffs have been pulled'
+      );
+      return result;
+  }
 }
