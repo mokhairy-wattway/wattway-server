@@ -100,7 +100,7 @@ export default class OCPIEndpointRouter {
   private buildRouteOcpiEndpointPullTariffs(): void {
     this.router.put(`/${RESTServerRoute.REST_OCPI_ENDPOINT_PULL_TARIFFS}`, (req: Request, res: Response, next: NextFunction) => {
       req.body.id = req.params.id;
-      void RouterUtils.handleRestServerAction(OCPIEndpointService.handlePullTariffsEndpoint.bind(this), ServerAction.OCPI_CPO_GET_TARIFFS, req, res, next);
+      void RouterUtils.handleRestServerAction(OCPIEndpointService.handlePullTariffsEndpoint.bind(this), ServerAction.OCPI_EMSP_GET_TARIFFS, req, res, next);
     });
   }
 
