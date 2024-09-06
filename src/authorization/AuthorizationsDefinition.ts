@@ -974,6 +974,7 @@ export const AUTHORIZATION_DEFINITION: AuthorizationDefinition = {
           'lastCpoPullTokens.lastUpdatedOn', 'lastCpoPullTokens.partial', 'lastCpoPullTokens.failureNbr', 'lastCpoPullTokens.successNbr', 'lastCpoPullTokens.totalNbr',
           'lastEmspPushTokens.lastUpdatedOn', 'lastEmspPushTokens.partial', 'lastEmspPushTokens.failureNbr', 'lastEmspPushTokens.successNbr', 'lastEmspPushTokens.totalNbr',
           'lastEmspPullLocations.lastUpdatedOn', 'lastEmspPullLocations.partial', 'lastEmspPullLocations.failureNbr', 'lastEmspPullLocations.successNbr', 'lastEmspPullLocations.totalNbr',
+          'lastEmspPullTariffs.lastUpdatedOn', 'lastEmspPullTariffs.partial', 'lastEmspPullTariffs.failureNbr', 'lastEmspPullTariffs.successNbr', 'lastEmspPullTariffs.totalNbr',
           'createdBy.name', 'createdBy.firstName', 'lastChangedBy.name', 'lastChangedBy.firstName',
         ]
       },

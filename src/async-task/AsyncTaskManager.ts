@@ -16,6 +16,7 @@ import OCPICheckSessionsAsyncTask from './tasks/ocpi/OCPICheckSessionsAsyncTask'
 import OCPIPullCdrsAsyncTask from './tasks/ocpi/OCPIPullCdrsAsyncTask';
 import OCPIPullLocationsAsyncTask from './tasks/ocpi/OCPIPullLocationsAsyncTask';
 import OCPIPullSessionsAsyncTask from './tasks/ocpi/OCPIPullSessionsAsyncTask';
+import OCPIPullTariffsAsyncTask from './tasks/ocpi/OCPIPullTariffsAsyncTask';
 import OCPIPullTokensAsyncTask from './tasks/ocpi/OCPIPullTokensAsyncTask';
 import OCPIPushEVSEStatusesAsyncTask from './tasks/ocpi/OCPIPushEVSEStatusesAsyncTask';
 import OCPIPushTokensAsyncTask from './tasks/ocpi/OCPIPushTokensAsyncTask';
@@ -197,6 +198,8 @@ export default class AsyncTaskManager {
         return new OCPIPullLocationsAsyncTask(asyncTask, correlationID);
       case AsyncTasks.OCPI_PULL_SESSIONS:
         return new OCPIPullSessionsAsyncTask(asyncTask, correlationID);
+      case AsyncTasks.OCPI_PULL_TARIFFS:
+        return new OCPIPullTariffsAsyncTask(asyncTask, correlationID);
       case AsyncTasks.OCPI_PULL_CDRS:
         return new OCPIPullCdrsAsyncTask(asyncTask, correlationID);
       case AsyncTasks.OCPI_CHECK_CDRS:

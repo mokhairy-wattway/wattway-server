@@ -1,4 +1,4 @@
-import OCPIEndpoint, { OCPILastCpoPullToken, OCPILastCpoPushStatus, OCPILastEmspPullLocation, OCPILastEmspPushToken } from '../../types/ocpi/OCPIEndpoint';
+import OCPIEndpoint, { OCPILastCpoPullToken, OCPILastCpoPushStatus, OCPILastEmspPullLocation, OCPILastEmspPullTariff, OCPILastEmspPushToken } from '../../types/ocpi/OCPIEndpoint';
 import global, { DatabaseCount, FilterParams } from '../../types/GlobalType';
 
 import BackendError from '../../exception/BackendError';
@@ -160,6 +160,28 @@ export default class OCPIEndpointStorage {
       }
     );
     await Logging.traceDatabaseRequestEnd(tenant, MODULE_NAME, 'saveOcpiLastEmspPullLocation', startTime, ocpiEndpointID, lastEmspPullLocations);
+  }
+
+  public static async saveOcpiLastEmspPullTariff(tenant: Tenant, ocpiEndpointID: string, lastEmspPullTariffs: OCPILastEmspPullTariff): Promise<void> {
+    const startTime = Logging.traceDatabaseRequestStart();
+    DatabaseUtils.checkTenantObject(tenant);
+    // Modify
+    await global.database.getCollection<any>(tenant.id, 'ocpiendpoints').findOneAndUpdate(
+      { _id: DatabaseUtils.convertToObjectID(ocpiEndpointID) },
+      {
+        $set: {
+          lastEmspPullTariffs: {
+            lastUpdatedOn: Utils.convertToDate(lastEmspPullTariffs.lastUpdatedOn),
+            partial: Utils.convertToBoolean(lastEmspPullTariffs.partial),
+            successNbr: Utils.convertToInt(lastEmspPullTariffs.successNbr),
+            failureNbr: Utils.convertToInt(lastEmspPullTariffs.failureNbr),
+            totalNbr: Utils.convertToInt(lastEmspPullTariffs.totalNbr),
+            tariffIDsInFailure: lastEmspPullTariffs.tariffIDsInFailure,
+          }
+        }
+      }
+    );
+    await Logging.traceDatabaseRequestEnd(tenant, MODULE_NAME, 'saveOcpiLastEmspPullTariff', startTime, ocpiEndpointID, lastEmspPullTariffs);
   }
 
   // Delegate

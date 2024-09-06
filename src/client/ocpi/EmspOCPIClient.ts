@@ -1,4 +1,4 @@
-import OCPIEndpoint, { OCPILastEmspPullLocation, OCPILastEmspPushToken } from '../../types/ocpi/OCPIEndpoint';
+import OCPIEndpoint, { OCPILastEmspPullLocation, OCPILastEmspPushToken, OCPILastEmspPullTariff } from '../../types/ocpi/OCPIEndpoint';
 import moment, { Moment } from 'moment';
 
 import BackendError from '../../exception/BackendError';
@@ -18,6 +18,7 @@ import { OCPIRole } from '../../types/ocpi/OCPIRole';
 import { OCPISession } from '../../types/ocpi/OCPISession';
 import { OCPIStartSession } from '../../types/ocpi/OCPIStartSession';
 import { OCPIStopSession } from '../../types/ocpi/OCPIStopSession';
+import { OCPITariff } from '../../types/ocpi/OCPITariff';
 import { OCPIToken } from '../../types/ocpi/OCPIToken';
 import OCPIUtils from '../../server/ocpi/OCPIUtils';
 import OCPIUtilsService from '../../server/ocpi/service/OCPIUtilsService';
@@ -31,7 +32,6 @@ import Tenant from '../../types/Tenant';
 import TransactionStorage from '../../storage/mongodb/TransactionStorage';
 import Utils from '../../utils/Utils';
 import _ from 'lodash';
-import { OCPITariff } from '../../types/ocpi/OCPITariff';
 
 const MODULE_NAME = 'EmspOCPIClient';
 
@@ -544,23 +544,36 @@ export default class EmspOCPIClient extends OCPIClient {
       success: 0,
       failure: 0,
       total: 0,
-      logs: []
+      logs: [],
+      objectIDsInFailure: [],
     };
     // Perfs trace
     const startTime = new Date().getTime();
+    // Get timestamp before starting process - to be saved in DB at the end of the process
+    const startDate = new Date();
     // Get tariffs endpoint url
     let tariffsUrl = this.getEndpointUrl('tariffs', ServerAction.OCPI_EMSP_GET_TARIFFS);
+    // Build last execution date
     let momentFrom: Moment;
     if (partial) {
-      // Last 2 days by default
-      momentFrom = moment().utc().subtract(2, 'days').startOf('day');
+      // Get last job success date
+      if (this.ocpiEndpoint.lastEmspPullTariffs?.lastUpdatedOn) {
+        // Last execution date
+        momentFrom = moment(this.ocpiEndpoint.lastEmspPullTariffs.lastUpdatedOn).utc();
+      } else {
+        // Last week by default
+        momentFrom = moment().utc().subtract(1, 'weeks').startOf('day');
+      }
+      // Update URL
+      tariffsUrl = `${tariffsUrl}?date_from=${momentFrom.format()}&limit=1000`;
     } else {
-      // Last 2 weeks by default
-      momentFrom = moment().utc().subtract(2, 'weeks').startOf('day');
+      // Update URL
+      tariffsUrl = `${tariffsUrl}?limit=1000`;
     }
-    tariffsUrl = `${tariffsUrl}?date_from=${momentFrom.format()}&limit=10`;
     let nextResult = true;
+    let totalNumberOfTariffs = 0;
     do {
+      const startTimeLoop = new Date().getTime();
       // Call IOP
       const response = await this.axiosInstance.get(
         tariffsUrl,
@@ -569,6 +582,22 @@ export default class EmspOCPIClient extends OCPIClient {
             Authorization: `Token ${this.ocpiEndpoint.token}`
           },
         });
+      if (!response.data?.data) {
+        throw new BackendError({
+          action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+          message: 'Invalid response from Pull Tariffs',
+          module: MODULE_NAME, method: 'pullTariffs',
+          detailedMessages: { tariffsUrl }
+        });
+      }
+      const numberOfTariffs = response.data.data.length as number;
+      totalNumberOfTariffs += numberOfTariffs;
+      await Logging.logDebug({
+        tenantID: this.tenant.id,
+        action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+        message: `${numberOfTariffs.toString()} Tariffs retrieved from ${tariffsUrl}`,
+        module: MODULE_NAME, method: 'pullTariffs'
+      });
       const tariffs = response.data.data as OCPITariff[];
       if (!Utils.isEmptyArray(tariffs)) {
         await Promise.map(tariffs, async (tariff: OCPITariff) => {
@@ -585,6 +614,7 @@ export default class EmspOCPIClient extends OCPIClient {
             result.success++;
           } catch (error) {
             result.failure++;
+            result.objectIDsInFailure.push(tariff.id);
             result.logs.push(
               `Failed to update Tariff ID '${tariff.id}': ${error.message as string}`
             );
@@ -598,7 +628,26 @@ export default class EmspOCPIClient extends OCPIClient {
       } else {
         nextResult = false;
       }
+      const executionDurationLoopSecs = (new Date().getTime() - startTimeLoop) / 1000;
+      const executionDurationTotalLoopSecs = (new Date().getTime() - startTime) / 1000;
+      await Logging.logDebug({
+        tenantID: this.tenant.id,
+        action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+        message: `${numberOfTariffs.toString()} tariff(s) processed in ${executionDurationLoopSecs}s - Total of ${totalNumberOfTariffs} tariff(s) processed in ${executionDurationTotalLoopSecs}s`,
+        module: MODULE_NAME, method: 'pullTariffs',
+        detailedMessages: { tariffs }
+      });
      } while (nextResult);
+     // Save result in OCPI endpoint
+    const lastEmspPushTokens: OCPILastEmspPullTariff = {
+      lastUpdatedOn: startDate,
+      partial,
+      successNbr: result ? result.success : 0,
+      failureNbr: result ? result.failure : 0,
+      totalNbr: result ? result.total : 0,
+      tariffIDsInFailure: result ? _.uniq(result.objectIDsInFailure) : [],
+    };
+    await OCPIEndpointStorage.saveOcpiLastEmspPullTariff(this.tenant, this.ocpiEndpoint.id, lastEmspPushTokens);
       result.total = result.failure + result.success;
       const executionDurationSecs = (new Date().getTime() - startTime) / 1000;
       await Logging.logOcpiResult(this.tenant.id, ServerAction.OCPI_EMSP_GET_TARIFFS,

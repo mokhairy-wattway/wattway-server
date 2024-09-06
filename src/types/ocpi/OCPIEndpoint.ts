@@ -23,6 +23,7 @@ export default interface OCPIEndpoint extends OcpiEndpointAuthorizationActions, 
   lastEmspPushTokens?: OCPILastEmspPushToken;
   lastEmspPullLocations?: OCPILastEmspPullLocation;
   lastCpoPullTokens?: OCPILastCpoPullToken;
+  lastEmspPullTariffs?: OCPILastEmspPullTariff;
 }
 
 export interface OCPILastEmspPushToken {
@@ -41,6 +42,15 @@ export interface OCPILastEmspPullLocation {
   failureNbr: number;
   totalNbr: number;
   locationIDsInFailure?: string[];
+}
+
+export interface OCPILastEmspPullTariff {
+  lastUpdatedOn: Date;
+  partial: boolean;
+  successNbr: number;
+  failureNbr: number;
+  totalNbr: number;
+  tariffIDsInFailure?: string[];
 }
 
 export interface OCPILastCpoPullToken {
