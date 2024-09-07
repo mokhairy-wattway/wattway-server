@@ -1,4 +1,4 @@
-import OCPIEndpoint, { OCPILastEmspPullLocation, OCPILastEmspPushToken, OCPILastEmspPullTariff } from '../../types/ocpi/OCPIEndpoint';
+import OCPIEndpoint, { OCPILastEmspPullLocation, OCPILastEmspPullTariff, OCPILastEmspPushToken } from '../../types/ocpi/OCPIEndpoint';
 import moment, { Moment } from 'moment';
 
 import BackendError from '../../exception/BackendError';
@@ -538,6 +538,8 @@ export default class EmspOCPIClient extends OCPIClient {
     });
     return response.data.data as OCPICommandResponse;
   }
+
+  //TODO: Add unit tests for this function.
   public async pullTariffs(partial = false): Promise<OCPIResult> {
     // Result
     const result: OCPIResult = {
