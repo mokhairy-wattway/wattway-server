@@ -72,6 +72,8 @@ export default class EMSPTariffsService {
         ocpiError: OCPIStatusCode.CODE_2001_INVALID_PARAMETER_ERROR
       });
     }
+    // Load the tariffs from the json file name countryCode_partyId_Tarrifs.json
+    const tariffsFilePath = path.join(__dirname, `${countryCode}_${partyId}_Tariffs.json`);
     let tariff: OCPITariff = {} as OCPITariff;
     if (req.body) {
       tariff = req.body as OCPITariff;
@@ -79,8 +81,6 @@ export default class EMSPTariffsService {
       tariff.last_updated = new Date()
     }
     // TODO: check if the tariff exists in the database and update it if it does or create a new one if it doesn't
-    // Load the tariffs from the json file
-    const tariffsFilePath = path.join(__dirname, 'Tariffs.json');
     let storedTariffs: OCPITariff[] = [];
     try {
       const tariffsData = await fs.readFile(tariffsFilePath, 'utf-8');
@@ -131,6 +131,81 @@ export default class EMSPTariffsService {
     }
     
     res.json(OCPIUtils.success(tariff));
+    next();
+  }
+
+  // TODO: This function should be changed to the correct one
+  public static async handleDeleteTariff(action: ServerAction, req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { tenant } = req;
+    const urlSegment = req.path.substring(1).split('/');
+    // Remove action
+    urlSegment.shift();
+    // Get filters
+    const countryCode = urlSegment.shift();
+    const partyId = urlSegment.shift();
+    const tariffId = urlSegment.shift();
+    if (!countryCode || !partyId || !tariffId) {
+      throw new AppError({
+        module: MODULE_NAME, method: 'handlePutTariff', action,
+        errorCode: HTTPError.GENERAL_ERROR,
+        message: 'Missing request parameters',
+        ocpiError: OCPIStatusCode.CODE_2001_INVALID_PARAMETER_ERROR
+      });
+    }
+    const tariffsFilePath = path.join(__dirname, `${countryCode}_${partyId}_Tariffs.json`);
+    // Read existing tariffs from file
+    let storedTariffs: OCPITariff[] = [];
+    try {
+      const data = await fs.readFile(tariffsFilePath, 'utf8');
+      storedTariffs = JSON.parse(data);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw new AppError({
+          module: MODULE_NAME, method: 'handleDeleteTariff', action,
+          errorCode: HTTPError.GENERAL_ERROR,
+          message: 'Error reading Tariffs.json file',
+          ocpiError: OCPIStatusCode.CODE_3000_GENERIC_SERVER_ERROR
+        });
+      }
+      // If file doesn't exist, we'll start with an empty array
+    }
+
+    // Find the index of the tariff to delete
+    const index = storedTariffs.findIndex((t) => t.id === tariffId);
+
+    if (index === -1) {
+      throw new AppError({
+        module: MODULE_NAME, method: 'handleDeleteTariff', action,
+        errorCode: HTTPError.GENERAL_ERROR,
+        message: `Tariff with ID ${tariffId} not found`,
+        ocpiError: OCPIStatusCode.CODE_2003_UNKNOWN_LOCATION_ERROR
+      });
+    }
+
+    // Remove the tariff from the array
+    storedTariffs.splice(index, 1);
+
+    // Save the updated tariffs to the JSON file
+    try {
+      await fs.writeFile(tariffsFilePath, JSON.stringify(storedTariffs, null, 2));
+    } catch (error) {
+      throw new AppError({
+        module: MODULE_NAME, method: 'handleDeleteTariff', action,
+        errorCode: HTTPError.GENERAL_ERROR,
+        message: 'Error writing to Tariffs.json file',
+        ocpiError: OCPIStatusCode.CODE_3000_GENERIC_SERVER_ERROR
+      });
+    }
+
+    await Logging.logDebug({
+      tenantID: tenant.id,
+      action: action,
+      module: MODULE_NAME, method: 'handleDeleteTariff',
+      message: `Tariff ID ${tariffId} has been deleted from the database`,
+      detailedMessages: { tariffId }
+    });
+
+    res.status(StatusCodes.OK).json(OCPIUtils.success());
     next();
   }
 }

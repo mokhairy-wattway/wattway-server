@@ -205,6 +205,7 @@ export enum ServerAction {
   OCPI_EMSP_GET_TARIFF = 'OcpiEmspGetTariff',
   OCPI_EMSP_GET_TARIFFS = 'OcpiEmspGetTariffs',
   OCPI_EMSP_PUT_TARIFF = 'OcpiEmspPutTariff',
+  OCPI_EMSP_DELETE_TARIFF = 'OcpiEmspDeleteTariff',
 
   OICP_CPO_REQUEST = 'OicpCpoRequest',
   OICP_SETTINGS = 'OicpSettings',

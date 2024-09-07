@@ -15,6 +15,7 @@ export default class EMSPTariffsRouterV211 {
   public buildRoutes(): express.Router {
     this.buildRouteGetTariff();
     this.buildRoutePutTariff();
+    this.buildRouteDeleteTariff();
     return this.router;
   }
 
@@ -27,6 +28,11 @@ export default class EMSPTariffsRouterV211 {
   protected buildRoutePutTariff(): void {
     this.router.put(`/${OCPIServerRoute.OCPI_TARIFFS}*`, async (req: Request, res: Response, next: NextFunction) => {
       await RouterUtils.handleOCPIServerAction(EMSPTariffsService.handlePutTariff.bind(this), ServerAction.OCPI_EMSP_PUT_TARIFF, req, res, next);
+    });
+  }
+  protected buildRouteDeleteTariff(): void {
+    this.router.delete(`/${OCPIServerRoute.OCPI_TARIFFS}*`, async (req: Request, res: Response, next: NextFunction) => {
+      await RouterUtils.handleOCPIServerAction(EMSPTariffsService.handleDeleteTariff.bind(this), ServerAction.OCPI_EMSP_DELETE_TARIFF, req, res, next);
     });
   }
 }
