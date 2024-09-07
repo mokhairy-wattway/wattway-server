@@ -234,6 +234,18 @@ export default abstract class OCPIClient {
     return this.settings[this.role].partyID;
   }
 
+  public getOCPIEndpointName(): string {
+    if (this.ocpiEndpoint && this.ocpiEndpoint.name) {
+      return this.ocpiEndpoint.name;
+    }
+    throw new BackendError({
+      action: ServerAction.OCPI_ENDPOINT,
+      message: 'OCPI Endpoint name is not defined',
+      module: MODULE_NAME,
+      method: 'getOCPIEndpointName',
+    });
+  }
+
   protected getEndpointUrl(service: string, action: ServerAction): string {
     if (this.ocpiEndpoint.availableEndpoints && this.ocpiEndpoint.availableEndpoints[service]) {
       return this.ocpiEndpoint.availableEndpoints[service];

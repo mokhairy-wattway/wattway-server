@@ -83,6 +83,20 @@ export default class OCPIClientFactory {
     }
   }
 
+  public static async getAvailableOcpiClients(tenant: Tenant, ocpiRole: OCPIRole): Promise<(CpoOCPIClient | EmspOCPIClient)[]> {
+    const ocpiEndpoints = await OCPIEndpointStorage.getOcpiEndpoints(tenant, { role: ocpiRole }, Constants.DB_PARAMS_MAX_LIMIT);
+    const clients: (CpoOCPIClient | EmspOCPIClient)[] = [];
+    for (const ocpiEndpoint of ocpiEndpoints.result) {
+      if (ocpiEndpoint.status === OCPIRegistrationStatus.REGISTERED) {
+        const client = await OCPIClientFactory.getOcpiClient(tenant, ocpiEndpoint);
+        if (client) {
+          clients.push(client);
+        }
+      }
+    }
+    return clients;
+  }
+
   public static async getOcpiClientForChargingStation(tenant: Tenant, ocpiRole: OCPIRole, chargingStation: ChargingStation): Promise<CpoOCPIClient|EmspOCPIClient> {
     const ocpiEndpoints = await OCPIEndpointStorage.getOcpiEndpoints(tenant, { role: ocpiRole }, Constants.DB_PARAMS_MAX_LIMIT);
     // split charging station id to get the country code

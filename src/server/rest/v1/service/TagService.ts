@@ -890,19 +890,29 @@ export default class TagService {
     // Synchronize badges with IOP
     if (Utils.isComponentActiveFromToken(loggedUser, TenantComponents.OCPI)) {
       try {
-        const ocpiClient: EmspOCPIClient = await OCPIClientFactory.getAvailableOcpiClient(
-          tenant, OCPIRole.EMSP) as EmspOCPIClient;
-        if (ocpiClient) {
-          await ocpiClient.pushToken(
-            OCPIUtils.buildEmspTokenFromTag(tenant, tag)
-          );
+        const ocpiClients: EmspOCPIClient[] = await OCPIClientFactory.getAvailableOcpiClients(
+          tenant, OCPIRole.EMSP) as EmspOCPIClient[];
+        console.log('length of clients : ', ocpiClients.length )
+        console.log('ocpiClients : ', ocpiClients)
+        if (ocpiClients && ocpiClients.length > 0) {
+          const token = OCPIUtils.buildEmspTokenFromTag(tenant, tag);
+          for (const ocpiClient of ocpiClients) {
+            await ocpiClient.pushToken(token);
+            await Logging.logInfo({
+              tenantID: tenant.id,
+              module: MODULE_NAME, method: 'updateTagOCPI',
+              action: action,
+              message: `Tag ID '${tag.id}' updated with OCPI `,
+              detailedMessages: `Tag ID '${tag.id}' has been sent to ${ocpiClient.getOCPIEndpointName()}`
+            });
+          }
         }
       } catch (error) {
         await Logging.logError({
           tenantID: tenant.id,
           action: action,
           module: MODULE_NAME, method: 'updateTagOCPI',
-          message: `Unable to update the Tag ID '${tag.id}' with the OCPI IOP`,
+          message: `Unable to update the Tag ID '${tag.id}' with the OCPI IOPs`,
           detailedMessages: { error: error.stack }
         });
       }
