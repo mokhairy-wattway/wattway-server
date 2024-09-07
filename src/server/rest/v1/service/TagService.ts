@@ -892,8 +892,6 @@ export default class TagService {
       try {
         const ocpiClients: EmspOCPIClient[] = await OCPIClientFactory.getAvailableOcpiClients(
           tenant, OCPIRole.EMSP) as EmspOCPIClient[];
-        console.log('length of clients : ', ocpiClients.length )
-        console.log('ocpiClients : ', ocpiClients)
         if (ocpiClients && ocpiClients.length > 0) {
           const token = OCPIUtils.buildEmspTokenFromTag(tenant, tag);
           for (const ocpiClient of ocpiClients) {
