@@ -73,7 +73,7 @@ export default class EMSPTariffsService {
       });
     }
     // Load the tariffs from the json file name countryCode_partyId_Tarrifs.json
-    const tariffsFilePath = path.join(__dirname, `${countryCode}_${partyId}_Tariffs.json`);
+    const tariffsFilePath = `src/assets/${countryCode}_${partyId}_Tariffs.json`;
     let tariff: OCPITariff = {} as OCPITariff;
     if (req.body) {
       tariff = req.body as OCPITariff;
@@ -152,7 +152,7 @@ export default class EMSPTariffsService {
         ocpiError: OCPIStatusCode.CODE_2001_INVALID_PARAMETER_ERROR
       });
     }
-    const tariffsFilePath = path.join(__dirname, `${countryCode}_${partyId}_Tariffs.json`);
+    const tariffsFilePath = `src/assets/${countryCode}_${partyId}_Tariffs.json`;
     // Read existing tariffs from file
     let storedTariffs: OCPITariff[] = [];
     try {

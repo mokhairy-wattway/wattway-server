@@ -32,6 +32,8 @@ import Tenant from '../../types/Tenant';
 import TransactionStorage from '../../storage/mongodb/TransactionStorage';
 import Utils from '../../utils/Utils';
 import _ from 'lodash';
+import fs from 'fs';
+import path from 'path';
 
 const MODULE_NAME = 'EmspOCPIClient';
 
@@ -612,6 +614,33 @@ export default class EmspOCPIClient extends OCPIClient {
               message: `Tariff ID '${tariff.id}'`,
               module: MODULE_NAME, method: 'pullTariffs',
               detailedMessages: { tariff }
+            });
+            // Check if the tariff already exists in the JSON file
+            const tariffsFilePath = `src/assets/${this.ocpiEndpoint.countryCode}_${this.ocpiEndpoint.partyId}_Tariffs.json`;
+            let existingTariffs = [];
+            try {
+              const fileContent = await fs.promises.readFile(tariffsFilePath, 'utf8');
+              existingTariffs = JSON.parse(fileContent);
+            } catch (error) {
+              // File doesn't exist or is invalid, we'll create a new one
+            }
+            // Find the index of the existing tariff (if any)
+            const existingIndex = existingTariffs.findIndex(t => t.id === tariff.id);
+            if (existingIndex !== -1) {
+              // Update existing tariff
+              existingTariffs[existingIndex] = tariff;
+            } else {
+              // Add new tariff
+              existingTariffs.push(tariff);
+            }
+            // Write updated tariffs back to file
+            await fs.promises.writeFile(tariffsFilePath, JSON.stringify(existingTariffs, null, 2));
+            await Logging.logDebug({
+              tenantID: this.tenant.id,
+              action: ServerAction.OCPI_EMSP_GET_TARIFFS,
+              message: `Tariff ID '${tariff.id}' ${existingIndex !== -1 ? 'updated' : 'added'} in ${tariffsFilePath}`,
+              module: MODULE_NAME,
+              method: 'pullTariffs'
             });
             result.success++;
           } catch (error) {
