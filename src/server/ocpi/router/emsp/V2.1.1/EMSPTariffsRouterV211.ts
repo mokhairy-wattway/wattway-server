@@ -19,7 +19,6 @@ export default class EMSPTariffsRouterV211 {
     return this.router;
   }
 
-  // TODO: implement PUT and DELETE methods for tariffs
   protected buildRouteGetTariff(): void {
     this.router.get(`/${OCPIServerRoute.OCPI_TARIFFS}*`, async (req: Request, res: Response, next: NextFunction) => {
       await RouterUtils.handleOCPIServerAction(EMSPTariffsService.handleGetTariff.bind(this), ServerAction.OCPI_EMSP_GET_TARIFF, req, res, next);

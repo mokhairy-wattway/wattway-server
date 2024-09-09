@@ -354,7 +354,7 @@ export default class EmspOCPIClient extends OCPIClient {
       momentFrom = moment().utc().subtract(2, 'days').startOf('day');
     } else {
       // Last 2 weeks by default
-      momentFrom = moment().utc().subtract(2, 'weeks').startOf('day');
+      momentFrom = moment().utc().subtract(4, 'weeks').startOf('day');
     }
     cdrsUrl = `${cdrsUrl}?date_from=${momentFrom.format()}&limit=10`;
     let nextResult = true;
