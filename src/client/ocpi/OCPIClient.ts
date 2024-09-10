@@ -148,6 +148,8 @@ export default abstract class OCPIClient {
       // Set available endpoints
       this.ocpiEndpoint.availableEndpoints = OCPIUtils.convertAvailableEndpoints(endpointVersions);
       this.ocpiEndpoint.localToken = OCPIUtils.generateLocalToken(this.tenant.subdomain);
+      // save the newly generated Token in th DB
+      await OCPIEndpointStorage.saveOcpiEndpoint(this.tenant, this.ocpiEndpoint);
       // Put credentials and receive response
       const credentials = await this.putCredentials();
       // Store information
@@ -331,6 +333,7 @@ export default abstract class OCPIClient {
       module: MODULE_NAME, method: 'putCredentials',
       detailedMessages: { credentials }
     });
+    console.log('The used Token for PUT is: ', this.ocpiEndpoint.token);
     // Call eMSP with CPO credentials
     const response = await this.axiosInstance.put(credentialsUrl, credentials,
       {
