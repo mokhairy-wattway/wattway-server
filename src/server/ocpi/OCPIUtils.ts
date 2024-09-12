@@ -22,12 +22,12 @@ import { OCPIResponse } from '../../types/ocpi/OCPIResponse';
 import { OCPIRole } from '../../types/ocpi/OCPIRole';
 import { OCPISessionStatus } from '../../types/ocpi/OCPISession';
 import { OCPIStatusCode } from '../../types/ocpi/OCPIStatusCode';
+import PricingDefinition from '../../types/Pricing';
 import { Request } from 'express';
 import RoamingUtils from '../../utils/RoamingUtils';
 import { ServerAction } from '../../types/Server';
 import SettingStorage from '../../storage/mongodb/SettingStorage';
 import { SimplePricingSetting } from '../../types/Setting';
-import PricingDefinition from '../../types/Pricing';
 import Site from '../../types/Site';
 import SiteArea from '../../types/SiteArea';
 import SiteAreaStorage from '../../storage/mongodb/SiteAreaStorage';
@@ -75,7 +75,7 @@ export default class OCPIUtils {
     const availableEndpoints = {} as OCPIAvailableEndpoints;
     if (!Utils.isEmptyArray(endpointURLs.endpoints)) {
       for (const endpoint of endpointURLs.endpoints) {
-        availableEndpoints[endpoint.identifier] = endpoint.url;
+        availableEndpoints[endpoint.identifier] = endpoint.url.endsWith('/') ? endpoint.url : endpoint.url + '/';
       }
     }
     return availableEndpoints;

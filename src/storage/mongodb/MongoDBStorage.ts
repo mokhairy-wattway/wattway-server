@@ -173,6 +173,7 @@ export default class MongoDBStorage {
       { fields: { chargeBoxID: 1 } },
       { fields: { tagID: 1 } },
       { fields: { userID: 1 } },
+      { fields: { 'ocpiData.session.id': 1, chargeBoxID: 1 }, options: { partialFilterExpression: { ocpiData: { $exists: true } }, unique: true } }
     ]);
     // Settings
     await this.handleIndexesInCollection(tenantID, 'settings', [
