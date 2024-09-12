@@ -333,7 +333,6 @@ export default abstract class OCPIClient {
       module: MODULE_NAME, method: 'putCredentials',
       detailedMessages: { credentials }
     });
-    console.log('The used Token for PUT is: ', this.ocpiEndpoint.token);
     // Call eMSP with CPO credentials
     const response = await this.axiosInstance.put(credentialsUrl, credentials,
       {
