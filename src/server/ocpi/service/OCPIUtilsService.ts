@@ -299,10 +299,6 @@ export default class OCPIUtilsService {
 
   public static async processEmspTransactionFromSession(tenant: Tenant, session: OCPISession, action: ServerAction,
       transaction?: Transaction, user?: User): Promise<void> {
-<<<<<<< Updated upstream
-    console.log('Entered this function !!!!');
-=======
->>>>>>> Stashed changes
     let newTransaction = false;
     if (!OCPIUtilsService.validateEmspSession(session)) {
       throw new AppError({
@@ -370,10 +366,6 @@ export default class OCPIUtilsService {
     }
     // Create Transaction
     if (!transaction) {
-<<<<<<< Updated upstream
-      console.log('Create new transaction');
-=======
->>>>>>> Stashed changes
       newTransaction = true;
       // Get the Tag
       const tag = await TagStorage.getTag(tenant, session.auth_id, { withUser: true });
