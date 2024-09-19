@@ -34,7 +34,7 @@ jobs:
           ssh-add -l
           cd ~/wattway-server
           git pull origin master
-          nvm use v16
+          nvm use v18.20.4
           npm ci
           npm run build:prod
           pm2 restart wattway-server
